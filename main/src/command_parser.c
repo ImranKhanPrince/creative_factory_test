@@ -1,15 +1,19 @@
+
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "command_parser.h"
-#include "uart0.h"
 #include "uart1.h"
 #include "GPIO.h"
 
 // Maximum tokens in a command (e.g., "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
 #define MAX_TOKENS 5
 #define CHECKSUM_HEX_LEN 4 // "0xA5"
+
+static int tokenize(char *buffer, char **tokens, const char *delim);
+static uint8_t hex_to_uint8(const char *hex);
 
 // Tokenize the command into an array of strings
 static int tokenize(char *buffer, char **tokens, const char *delim)

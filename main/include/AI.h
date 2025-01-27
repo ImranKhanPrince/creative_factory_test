@@ -1,4 +1,4 @@
-#ifndef AI_HEADER
-#define AI_HEADER
+#ifndef AI_H
+#define AI_H
 
-#endif // AI_HEADER
+#endif // AI_H

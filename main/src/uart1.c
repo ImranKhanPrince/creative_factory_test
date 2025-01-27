@@ -1,5 +1,5 @@
 #include "uart1.h"
-
+// TODO: change baudrate
 void uart1_init()
 {
   // Configure UART parameters

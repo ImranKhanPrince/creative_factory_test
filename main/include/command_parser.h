@@ -1,5 +1,5 @@
-#ifndef CMD_PARSER_H
-#define CMD_PARSER_H
+#ifndef COMMAND_PARSER_H
+#define COMMAND_PARSER_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -42,4 +42,4 @@ void process_uart_command(char *buffer);
 // private
 void print_command_error(CommandError err);
 
-#endif
+#endif // COMMAND_PARSER_H

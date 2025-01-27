@@ -1,4 +1,4 @@
-#ifndef AO_HEADER
-#define AO_HEADER
+#ifndef AO_H
+#define AO_H
 
-#endif // AO_HEADER
+#endif // UART2_HEADER

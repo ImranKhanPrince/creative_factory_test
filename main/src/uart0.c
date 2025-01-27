@@ -1,8 +1,10 @@
-#include "uart0.h"
-
 #include "string.h"
+
 #include "driver/uart.h"
 #include "esp_err.h"
+
+#include "uart0.h"
+// TODO: change baudrate
 
 void uart0_init()
 {

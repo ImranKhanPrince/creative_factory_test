@@ -4,6 +4,10 @@
 #include "uart1.h"
 
 // TODO: make a array of gpio matrix
+/*STRUCT{pinname, mode, delay, state}*/
+/*Array[struct_pin]
+in the delay state it will lopp throught the array and check pinMODE if BLINK then check delay and send to next state
+*/
 
 int digital_read(int pin)
 {
