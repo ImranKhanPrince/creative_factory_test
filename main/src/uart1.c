@@ -1,11 +1,14 @@
 #include "uart1.h"
 // TODO: change baudrate
+
+int uart1_baudrate_ = 115200;
+
 void uart1_init()
 {
   // Configure UART parameters
   // Configure UART parameters
   uart_config_t uart_config = {
-      .baud_rate = UART1_BAUD_RATE,
+      .baud_rate = uart1_baudrate_,
       .data_bits = UART_DATA_8_BITS,
       .parity = UART_PARITY_DISABLE,
       .stop_bits = UART_STOP_BITS_1,

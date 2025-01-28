@@ -45,6 +45,9 @@ bool validate_checksum(const char *buffer, uint8_t received_checksum)
   return (calculated == received_checksum);
 }
 
+// NOTE: if back to back 2 new line comes then causes one command to faile
+// NOTE: if the data is at typing speed then parser will parse erorr as no buffer is used to fill up the comand
+
 CommandError parse_command(const char *buffer, ParsedCommand *cmd)
 {
   char buf_copy[128]; // Static buffer (adjust size as needed)

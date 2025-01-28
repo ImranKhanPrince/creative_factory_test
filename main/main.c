@@ -6,32 +6,52 @@
 #include "uart0.h"
 #include "uart1.h"
 #include "command_parser.h"
+#include "GPIO.h"
+#include "nvs.h"
 
 #define DELAY_TIME_MS 1000
 
 typedef enum
 {
-  STATE_IDLE,
-  STATE_DELAY,
-  STATE_WRITE,
-  STATE_ACTION
+  STATE_COMMAND,
+  STATE_BLINK,
 } state_t;
 
 void app_main(void)
 {
   TickType_t last_wake_time = xTaskGetTickCount();
   const TickType_t delay_ticks = pdMS_TO_TICKS(DELAY_TIME_MS);
-
+  init_nvs();
+  // uart1_baudrate_ = 115200;
+  // save_uart_baudrates();
+  load_uart_baudrates();
   uart0_init();
   uart1_init();
+  init_pinmap();
 
-  state_t state = STATE_IDLE;
+  if (load_pinmap_from_nvs() != ESP_OK)
+  {
+    uart1_debug_print("Failed to Load the pinmap value from nvs\n");
+  }
+
+  // pinmap[0].mode = BLINK;
+  // pinmap[0].last_wake_time = xTaskGetTickCount();
+  // pinmap[0].blink_delay_ms = 1000;
+  // pinmap[0].state = LOW;
+  // pinmap[0].pin_name = (gpio_num_t)2;
+  // ++used_gpio_count;
+  // if (save_pinmap_to_nvs() != ESP_OK)
+  // {
+  //   uart1_debug_print("Failed to SAVE the pinmap value from nvs\n");
+  // }
+
+  state_t state = STATE_COMMAND;
 
   while (true)
   {
     switch (state)
     {
-    case STATE_IDLE:
+    case STATE_COMMAND:
       char buf[100]; // fixed sized buffer but command will end with \n so strlen() can measure the size
 
       if (uart0_read_newline(buf))
@@ -41,27 +61,17 @@ void app_main(void)
       }
       // uart0_print("Sate IDLE\n");
       /* code */
-      state = STATE_DELAY;
+      state = STATE_BLINK;
       break;
 
-    case STATE_DELAY:
+    case STATE_BLINK:
       // uart0_print("State DELAY\n");
       // TODO: this state will blink the led. when time passes it will send to toggle led state.
-      if (xTaskGetTickCount() - last_wake_time >= delay_ticks)
-      {
-        last_wake_time = xTaskGetTickCount();
-        state = STATE_WRITE;
-        break;
-      }
+
       /* code */
-
-      state = STATE_IDLE;
-      break;
-
-    case STATE_WRITE:
-      // uart0_print("Sate WRITE\n");
-      uart0_print("Hello each second\n");
-      state = STATE_IDLE;
+      // typically if something then goes to a different case.
+      blink_task();
+      state = STATE_COMMAND;
       break;
 
     default:

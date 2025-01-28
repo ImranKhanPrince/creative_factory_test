@@ -10,6 +10,8 @@
 #define UART1_BUF_SIZE 1024
 #define UART1_BAUD_RATE 115200
 
+extern int uart1_baudrate_;
+
 void uart1_init();
 void uart1_debug_print(char *buf);
 

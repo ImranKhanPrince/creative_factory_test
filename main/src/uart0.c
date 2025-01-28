@@ -4,6 +4,8 @@
 #include "esp_err.h"
 
 #include "uart0.h"
+
+int uart0_baudrate_ = 115200;
 // TODO: change baudrate
 
 void uart0_init()
@@ -11,7 +13,7 @@ void uart0_init()
   // Configure UART parameters
   // Configure UART parameters
   uart_config_t uart_config = {
-      .baud_rate = UART0_BAUD_RATE,
+      .baud_rate = uart0_baudrate_,
       .data_bits = UART_DATA_8_BITS,
       .parity = UART_PARITY_DISABLE,
       .stop_bits = UART_STOP_BITS_1,
