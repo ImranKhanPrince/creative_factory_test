@@ -16,7 +16,7 @@ esp_err_t init_nvs(void)
   }
   return err;
 }
-
+// TODO: adjust the pinmap according to new addition
 esp_err_t save_pinmap_to_nvs(void)
 {
   nvs_handle_t nvs_handle;
@@ -135,7 +135,7 @@ esp_err_t load_pinmap_from_nvs(void)
     sprintf(key, "pin%d_mode", i);
     uint8_t mode;
     err = nvs_get_u8(nvs_handle, key, &mode);
-    pinmap[i].mode = (GPO_MODE)mode;
+    pinmap[i].mode = (GPIO_MODE)mode;
 
     // Load blink delay
     sprintf(key, "pin%d_delay", i);

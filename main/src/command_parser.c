@@ -10,16 +10,22 @@
 #include "GPIO.h"
 #include "nvs.h"
 #include "AO.h"
+#include "AI.h"
+// TODO: name this file to command processor and this file is architechture agnostic same as main.c
 
 // Maximum tokens in a command (e.g., "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
 #define MAX_TOKENS 5
 #define CHECKSUM_HEX_LEN 4 // "0xA5"
 
 // STATIC SIGNATUERS
+
+// TODO: move the handle functions to elsewhere
 static int tokenize(char *buffer, char **tokens, const char *delim);
 static uint8_t hex_to_uint8(const char *hex);
 static void handle_uart_baud_change(int channel, int baud);
 static void handle_pwm_value_change(int channel, float value);
+static void handle_read_DI(int pin);
+static void handle_read_ai(int channel);
 static int get_nearest_baudrate(int requested_baudrate);
 
 // Tokenize the command into an array of strings
@@ -165,8 +171,7 @@ void process_uart_command(char *buffer)
     break;
 
   case CMD_READ_AI:
-    // uint16_t value = analog_read(cmd.channel);
-    // printf("AI%d: %d\n", cmd.channel, value);
+    handle_read_ai(cmd.channel);
     break;
 
   case CMD_SET_AO:
@@ -272,4 +277,48 @@ static void handle_pwm_value_change(int channel, float value)
 {
   set_pwm_voltage(channel, value);
   save_pwm_values(); // to nvs from the global variable
+}
+
+static void handle_read_ai(int channel)
+{
+  char buf[10];
+  if (channel == 1)
+  {
+    int raw_value = read_adc_channel1();
+    float voltage_value = raw_value * 5.0 / (1 << ADC_BITWIDTH) - 1;
+
+    sprintf(buf, "%.2f\n", voltage_value);
+    uart0_print(buf);
+  }
+  else if (channel == 2)
+  {
+    int raw_value = read_adc_channel2();
+    float voltage_value = raw_value * 5.0 / (1 << ADC_BITWIDTH) - 1;
+
+    sprintf(buf, "%.2f\n", voltage_value);
+    uart0_print(buf);
+  }
+  else
+  {
+    uart1_log("Wrong ADC channel.\n");
+  }
+}
+
+void handle_read_DI(int pin)
+{
+  // TODO: make a error handler if gpio number is invalid.
+
+  int pin_value = digital_read(pin);
+  if (pin_value == 0)
+  {
+    uart0_print("LOW\n");
+  }
+  else if (pin_value == 1)
+  {
+    uart0_print("HIGH\n");
+  }
+  else
+  {
+    uart1_debug_print("Invalid pin value\n");
+  }
 }

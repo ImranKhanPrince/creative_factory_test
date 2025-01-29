@@ -6,10 +6,13 @@
 
 // in the delay state it will lopp throught the array and check pinMODE if BLINK then check delay and send to next state
 pinMap_t pinmap[MAX_PINS] = {0};
-int used_gpio_count = 0; // this will count the index of the array to insert the values of new gpio command
+int used_gpio_count = 0;                    // this will count the index of the array to insert the values of new gpio command
+int pin_nums[8] = {1, 2, 3, 4, 5, 6, 7, 8}; // TODO: use original usable pin no here
 
 int digital_read(int pin)
 {
+  // TODO: check the pin number from pin_nums then check if DIRECTION is output if not then give error but read the value.
+
   // Reset the pin to its default state
   gpio_reset_pin(pin);
 
@@ -22,29 +25,11 @@ int digital_read(int pin)
   return value;
 }
 
-void handle_read_DI(int pin)
-{
-  // TODO: make a error handler if gpio number is invalid.
-
-  int pin_value = digital_read(pin);
-  if (pin_value == 0)
-  {
-    uart0_print("LOW\n");
-  }
-  else if (pin_value == 1)
-  {
-    uart0_print("HIGH\n");
-  }
-  else
-  {
-    uart1_debug_print("Invalid pin value\n");
-  }
-}
-
 void init_pinmap()
 {
   for (int i = 0; i < MAX_PINS; i++)
   {
+    // TODO: make the pins by default outward and configure the
     pinmap[i].mode = LATCH;
     pinmap[i].blink_delay_ms = 0;
     pinmap[i].pin_name = GPIO_NUM_NC;
@@ -58,7 +43,7 @@ void blink_task()
 {
   int i = 0;
   while (pinmap[i].pin_name != GPIO_NUM_NC)
-  {
+  { // TODO: blink and OUTPUT Direction
     if (pinmap[i].mode == BLINK)
     {
       const TickType_t delay_ticks = pdMS_TO_TICKS(pinmap[i].blink_delay_ms);

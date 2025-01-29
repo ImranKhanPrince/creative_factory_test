@@ -9,20 +9,28 @@ typedef enum
 {
   BLINK,
   LATCH
-} GPO_MODE;
+} GPIO_MODE;
 typedef enum
 {
   HIGH,
   LOW
-} GPO_STATE;
+} GPIO_STATE;
+
+typedef enum
+{
+  INPUT,
+  OUTPUT
+} GPIO_DIRECTION;
 
 typedef struct
 {
-  int pin_name;
-  GPO_MODE mode;
-  GPO_STATE state;
-  int blink_delay_ms;
-  gpio_num_t last_wake_time;
+  uint8_t index;
+  uint8_t pin_name;          // pin_number of esp
+  GPIO_DIRECTION direction;  // INPUT OUTPUT DIRECTION
+  GPIO_MODE mode;            // FOR OUTPUT DIRECTION
+  GPIO_STATE state;          // FOR OUTPUT DIRECTION
+  int blink_delay_ms;        // FOR OUTPUT DIRECTION
+  gpio_num_t last_wake_time; // FOR OUTPUT DIRECTION
 } pinMap_t;
 
 #define MAX_PINS 8
@@ -32,7 +40,6 @@ extern int used_gpio_count;
 /*STRUCT{pinname, mode, delay, state}*/
 
 // public
-void handle_read_DI(int pin);
 void init_pinmap();
 void blink_task();
 

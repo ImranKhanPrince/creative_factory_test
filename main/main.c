@@ -9,6 +9,7 @@
 #include "GPIO.h"
 #include "nvs.h"
 #include "AO.h"
+#include "AI.h"
 
 #define DELAY_TIME_MS 1000
 
@@ -33,6 +34,9 @@ void app_main(void)
   init_pinmap();
   start_pwm_channel1();
   start_pwm_channel2();
+  init_adc_channel1();
+  init_adc_channel2();
+  // cleanup_adc(); // No need
 
   if (load_pinmap_from_nvs() != ESP_OK)
   {
