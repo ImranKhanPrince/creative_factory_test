@@ -8,6 +8,7 @@
 #include "command_parser.h"
 #include "GPIO.h"
 #include "nvs.h"
+#include "AO.h"
 
 #define DELAY_TIME_MS 1000
 
@@ -19,21 +20,27 @@ typedef enum
 
 void app_main(void)
 {
-  TickType_t last_wake_time = xTaskGetTickCount();
-  const TickType_t delay_ticks = pdMS_TO_TICKS(DELAY_TIME_MS);
-  init_nvs();
+
+  init_nvs(); // first peripheral to open
   // uart1_baudrate_ = 115200;
   // save_uart_baudrates();
-  load_uart_baudrates();
-  uart0_init();
-  uart1_init();
+  load_uart_baudrates(); // from nvs to extern variable
+
+  uart0_init(); // load baudrate first
+  uart1_init(); // needs for debug print
+
+  load_pwm_values(); // from nvs to extern variable
   init_pinmap();
+  start_pwm_channel1();
+  start_pwm_channel2();
 
   if (load_pinmap_from_nvs() != ESP_OK)
   {
     uart1_debug_print("Failed to Load the pinmap value from nvs\n");
   }
 
+  // TickType_t last_wake_time = xTaskGetTickCount();
+  // const TickType_t delay_ticks = pdMS_TO_TICKS(DELAY_TIME_MS);
   // pinmap[0].mode = BLINK;
   // pinmap[0].last_wake_time = xTaskGetTickCount();
   // pinmap[0].blink_delay_ms = 1000;
@@ -52,7 +59,7 @@ void app_main(void)
     switch (state)
     {
     case STATE_COMMAND:
-      char buf[100]; // fixed sized buffer but command will end with \n so strlen() can measure the size
+      char buf[100];
 
       if (uart0_read_newline(buf))
       {

@@ -1,6 +1,8 @@
 #include "nvs.h"
 #include "uart1.h"
 #include "uart0.h"
+#include "gpio.h"
+#include "AO.h"
 
 // TODO: uart baudrate, analog_IO values
 
@@ -239,6 +241,112 @@ esp_err_t load_uart_baudrates(void)
   {
     sprintf(debug_buf, "Failed to load UART1 baudrate! Error: %d\n", err);
     uart1_debug_print(debug_buf);
+    nvs_close(nvs_handle);
+    return err;
+  }
+
+  nvs_close(nvs_handle);
+  return ESP_OK;
+}
+
+esp_err_t save_pwm_values(void)
+{
+  nvs_handle_t nvs_handle;
+  esp_err_t err;
+  char debug_buf[64];
+
+  // Initialize NVS
+  err = init_nvs();
+  if (err != ESP_OK)
+  {
+    uart1_debug_print("NVS init failed!\n");
+    return err;
+  }
+
+  // Open NVS
+  err = nvs_open("pwm_config", NVS_READWRITE, &nvs_handle);
+  if (err != ESP_OK)
+  {
+    sprintf(debug_buf, "NVS open failed! Error: %d\n", err);
+    uart1_debug_print(debug_buf);
+    return err;
+  }
+
+  // Save channel 1 value
+  err = nvs_set_u32(nvs_handle, "ch1_voltage", (uint32_t)(channel1_voltage_value_ * 1000));
+  if (err != ESP_OK)
+  {
+    uart1_debug_print("Failed to save channel 1 value\n");
+    nvs_close(nvs_handle);
+    return err;
+  }
+
+  // Save channel 2 value
+  err = nvs_set_u32(nvs_handle, "ch2_voltage", (uint32_t)(channel2_voltage_value_ * 1000));
+  if (err != ESP_OK)
+  {
+    uart1_debug_print("Failed to save channel 2 value\n");
+    nvs_close(nvs_handle);
+    return err;
+  }
+  sprintf(debug_buf, "Saved PWM Values in NVS\n");
+  uart1_debug_print(debug_buf);
+
+  err = nvs_commit(nvs_handle);
+  nvs_close(nvs_handle);
+  return err;
+}
+
+esp_err_t load_pwm_values(void)
+{
+  nvs_handle_t nvs_handle;
+  esp_err_t err;
+  uint32_t value;
+  char debug_buf[64];
+
+  // Initialize NVS
+  err = init_nvs();
+  if (err != ESP_OK)
+  {
+    uart1_debug_print("NVS init failed!\n");
+    return err;
+  }
+
+  // Open NVS
+  err = nvs_open("pwm_config", NVS_READONLY, &nvs_handle);
+  if (err != ESP_OK)
+  {
+    sprintf(debug_buf, "NVS open failed! Error: %d\n", err);
+    uart1_debug_print(debug_buf);
+    return err;
+  }
+
+  // Load channel 1 value
+  err = nvs_get_u32(nvs_handle, "ch1_voltage", &value);
+  if (err == ESP_OK)
+  {
+    channel1_voltage_value_ = value / 1000.0;
+    sprintf(debug_buf, "Loaded channel1 pwm value: %.2f\n", channel1_voltage_value_);
+    uart1_debug_print(debug_buf);
+  }
+  else if (err != ESP_ERR_NVS_NOT_FOUND)
+  {
+    uart1_debug_print("Failed to load channel 1 value\n");
+    nvs_close(nvs_handle);
+    return err;
+  }
+
+  // Load channel 2 value
+  err = nvs_get_u32(nvs_handle, "ch2_voltage", &value);
+  if (err == ESP_OK)
+  {
+    channel2_voltage_value_ = value / 1000.0;
+    sprintf(debug_buf, "Loaded channel2 pwm value: %.2f\n", channel2_voltage_value_);
+    uart1_debug_print(debug_buf);
+  }
+  else if (err != ESP_ERR_NVS_NOT_FOUND)
+  {
+    uart1_debug_print("Failed to load channel 2 value\n");
     nvs_close(nvs_handle);
     return err;
   }

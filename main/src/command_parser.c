@@ -9,6 +9,7 @@
 #include "uart0.h"
 #include "GPIO.h"
 #include "nvs.h"
+#include "AO.h"
 
 // Maximum tokens in a command (e.g., "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
 #define MAX_TOKENS 5
@@ -18,6 +19,7 @@
 static int tokenize(char *buffer, char **tokens, const char *delim);
 static uint8_t hex_to_uint8(const char *hex);
 static void handle_uart_baud_change(int channel, int baud);
+static void handle_pwm_value_change(int channel, float value);
 static int get_nearest_baudrate(int requested_baudrate);
 
 // Tokenize the command into an array of strings
@@ -42,6 +44,7 @@ static uint8_t hex_to_uint8(const char *hex)
 // Validate checksum (XOR of all bytes before checksum)
 bool validate_checksum(const char *buffer, uint8_t received_checksum)
 {
+  // TODO: naming channel 0 causes checksum to mismatch. why?
   uint8_t calculated = 0;
   for (const char *p = buffer; *p != '\0' && *p != '0'; p++)
   { // Stop before "0x"
@@ -114,7 +117,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_AO;
     cmd->channel = atoi(tokens[1]);
-    cmd->value = atoi(tokens[2]);
+    cmd->value = atof(tokens[2]);
   }
   else if (strcmp(tokens[0], "SET_UART_BAUD") == 0)
   {
@@ -167,7 +170,7 @@ void process_uart_command(char *buffer)
     break;
 
   case CMD_SET_AO:
-    // analog_write(cmd.channel, cmd.value);
+    handle_pwm_value_change(cmd.channel, cmd.value);
     break;
 
   case CMD_READ_DI:
@@ -214,7 +217,6 @@ void handle_uart_baud_change(int channel, int baud)
   char buf[50];
   sprintf(buf, "parsed baud %d\n", baud);
   uart1_debug_print(buf);
-  // TODO: naming channel 0 causes checksum to mismatch. why?
   if (channel == 1)
   {
     int nearest_baud = get_nearest_baudrate(baud);
@@ -264,4 +266,10 @@ static int get_nearest_baudrate(int requested_baudrate)
   }
 
   return closest;
+}
+
+static void handle_pwm_value_change(int channel, float value)
+{
+  set_pwm_voltage(channel, value);
+  save_pwm_values(); // to nvs from the global variable
 }

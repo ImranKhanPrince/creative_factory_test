@@ -37,8 +37,8 @@ void init_pinmap();
 void blink_task();
 
 // TODO: to make
-void dio_set_blink(int pin, int value);
-void dio_set_mode(int pin, char *mode);
+void do_set_blink(int pin, int value);
+void do_set_mode(int pin, char *mode);
 
 int digital_read(int pin);
 
