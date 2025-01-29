@@ -6,14 +6,19 @@
 
 #include "command_parser.h"
 #include "uart1.h"
+#include "uart0.h"
 #include "GPIO.h"
+#include "nvs.h"
 
 // Maximum tokens in a command (e.g., "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
 #define MAX_TOKENS 5
 #define CHECKSUM_HEX_LEN 4 // "0xA5"
 
+// STATIC SIGNATUERS
 static int tokenize(char *buffer, char **tokens, const char *delim);
 static uint8_t hex_to_uint8(const char *hex);
+static void handle_uart_baud_change(int channel, int baud);
+static int get_nearest_baudrate(int requested_baudrate);
 
 // Tokenize the command into an array of strings
 static int tokenize(char *buffer, char **tokens, const char *delim)
@@ -78,6 +83,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   // Parse command type
   if (strcmp(tokens[0], "SET_DIO") == 0)
   {
+    uart1_debug_print("SET_DIO \n");
     if (token_count != 5)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_DIO;
@@ -87,6 +93,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   }
   else if (strcmp(tokens[0], "READ_DI") == 0)
   {
+    uart1_debug_print("READ_DI \n");
     if (token_count != 3)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_READ_DI;
@@ -94,6 +101,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   }
   else if (strcmp(tokens[0], "READ_AI") == 0)
   {
+    uart1_debug_print("READ_AI \n");
     if (token_count != 3)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_READ_AI;
@@ -101,6 +109,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   }
   else if (strcmp(tokens[0], "SET_AO") == 0)
   {
+    uart1_debug_print("SET_AO \n");
     if (token_count != 4)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_AO;
@@ -109,10 +118,12 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   }
   else if (strcmp(tokens[0], "SET_UART_BAUD") == 0)
   {
-    if (token_count != 3)
+    uart1_debug_print("SET_UART_BAUD \n");
+    if (token_count != 4)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_UART_BAUD;
-    cmd->value = atoi(tokens[1]); // Baud rate
+    cmd->channel = atoi(tokens[1]); // uart channel
+    cmd->value = atoi(tokens[2]);   // Baud rate
   }
   else
   {
@@ -164,7 +175,7 @@ void process_uart_command(char *buffer)
     break;
 
   case CMD_SET_UART_BAUD:
-    // uart_set_baudrate(cmd.value);
+    handle_uart_baud_change(cmd.channel, cmd.value);
     break;
 
   case CMD_ERROR:
@@ -196,4 +207,61 @@ void print_command_error(CommandError err)
     uart1_debug_print("Unknown Error\n");
     break;
   }
+}
+
+void handle_uart_baud_change(int channel, int baud)
+{
+  char buf[50];
+  sprintf(buf, "parsed baud %d\n", baud);
+  uart1_debug_print(buf);
+  // TODO: naming channel 0 causes checksum to mismatch. why?
+  if (channel == 1)
+  {
+    int nearest_baud = get_nearest_baudrate(baud);
+    uart0_change_baudrate(nearest_baud);
+
+    char buf[50];
+    sprintf(buf, "nearest baud: %d\n", nearest_baud);
+    uart1_debug_print(buf);
+
+    uart0_baudrate_ = nearest_baud;
+    save_uart_baudrates(); // nvs
+  }
+  else if (channel == 2)
+  {
+    int nearest_baud = get_nearest_baudrate(baud);
+    uart1_change_baudrate(nearest_baud);
+    char buf[50];
+    sprintf(buf, "nearest baud: %d\n", nearest_baud);
+    uart1_debug_print(buf);
+    uart1_baudrate_ = nearest_baud;
+    save_uart_baudrates(); // nvs
+  }
+  else
+  {
+    uart1_debug_print("invalid uart channel \n");
+  }
+}
+
+static int get_nearest_baudrate(int requested_baudrate)
+{
+  const int valid_baudrates[] = {
+      1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200,
+      230400, 460800, 921600, 1500000, 2000000, 3000000};
+  int num_baudrates = sizeof(valid_baudrates) / sizeof(valid_baudrates[0]); // 15*4/4
+
+  int closest = valid_baudrates[0];
+  int min_diff = abs(requested_baudrate - closest);
+
+  for (int i = 1; i < num_baudrates; i++)
+  {
+    int diff = abs(requested_baudrate - valid_baudrates[i]);
+    if (diff < min_diff)
+    {
+      min_diff = diff;
+      closest = valid_baudrates[i];
+    }
+  }
+
+  return closest;
 }

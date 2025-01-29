@@ -20,8 +20,8 @@ typedef struct
 {
   CommandType type; // TYPE OF COMMAND
   uint8_t pin;      // For DIO commands
-  uint8_t channel;  // For AI/AO commands
-  uint16_t value;   // Frequency, AO value, or baud rate
+  uint8_t channel;  // For AI/AO commands AND UART CHANNEL
+  uint32_t value;   // Frequency, AO value, or baud rate
   char mode[10];    // "INPUT", "OUTPUT", "BLINK"
 } ParsedCommand;
 

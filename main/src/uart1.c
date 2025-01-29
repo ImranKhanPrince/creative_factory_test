@@ -39,3 +39,8 @@ void uart1_debug_print(char *buf)
     uart_write_bytes(UART_NUM_1, buf, strlen(buf));
   }
 }
+
+void uart1_change_baudrate(int new_baudrate)
+{
+  uart_set_baudrate(UART_NUM_1, new_baudrate);
+}

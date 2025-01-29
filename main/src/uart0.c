@@ -6,7 +6,6 @@
 #include "uart0.h"
 
 int uart0_baudrate_ = 115200;
-// TODO: change baudrate
 
 void uart0_init()
 {
@@ -63,4 +62,9 @@ bool uart0_read_newline(char *buf)
 
   buf[index] = '\0'; // Null-terminate the string if buffer is full
   return false;
+}
+
+void uart0_change_baudrate(int new_baudrate)
+{
+  uart_set_baudrate(UART_NUM_0, new_baudrate);
 }
