@@ -1,13 +1,13 @@
 # Target labels
  bootloader
 # Source files and their labels
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/CMakeFiles/bootloader
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/CMakeFiles/bootloader.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/CMakeFiles/bootloader-complete.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
-C:/Users/Imran/Documents/GitHub/creative_factory_test/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+C:/Users/Notebook/Desktop/creative_factory/build/CMakeFiles/bootloader
+C:/Users/Notebook/Desktop/creative_factory/build/CMakeFiles/bootloader.rule
+C:/Users/Notebook/Desktop/creative_factory/build/CMakeFiles/bootloader-complete.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/Users/Notebook/Desktop/creative_factory/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
