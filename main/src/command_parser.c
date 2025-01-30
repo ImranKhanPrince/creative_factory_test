@@ -90,7 +90,16 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
     return CMD_ERR_CHECKSUM_MISMATCH;
 
   // Parse command type
-  if (strcmp(tokens[0], "SET_DIO") == 0)
+  if (strcmp(tokens[0], "SET_GPIO_DIR") == 0)
+  {
+    uart1_log("CMD SET_GPIO_DIR");
+    if (token_count != 4)
+      return CMD_ERR_INVALID_FORMAT;
+    cmd->type = CMD_SET_GPIO_DIRECTION;
+    cmd->pin = atoi(tokens[1]); // pin no so that user can see the boards nuumber and enter that
+    strncpy(cmd->mode, tokens[2], sizeof(cmd->mode));
+  } // SET_GPIO_DIR 2 OUTPUT Checksum (4)
+  else if (strcmp(tokens[0], "SET_DIO") == 0)
   {
     uart1_debug_print("SET_DIO \n");
     if (token_count != 5)
@@ -156,7 +165,11 @@ void process_uart_command(char *buffer)
 
   switch (cmd.type)
   {
-    // TODO: implement these functionality
+  // TODO: implement these functionalities
+  case CMD_SET_GPIO_DIRECTION:
+    // configure gpio direction input or output
+    // set_direction(cmd.pin, cmd.mode);
+    break;
   case CMD_SET_DIO:
     if (strcmp(cmd.mode, "BLINK") == 0)
     {
@@ -188,6 +201,7 @@ void process_uart_command(char *buffer)
 
   case CMD_ERROR:
     // log error message
+    uart1_log("Unrecognized Command.\n");
     break;
 
   default:

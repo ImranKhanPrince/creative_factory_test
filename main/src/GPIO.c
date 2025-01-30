@@ -8,6 +8,8 @@
 pinMap_t pinmap[MAX_PINS] = {0};
 int used_gpio_count = 0;                    // this will count the index of the array to insert the values of new gpio command
 int pin_nums[8] = {1, 2, 3, 4, 5, 6, 7, 8}; // TODO: use original usable pin no here
+// dev module pattern: [21, 19, 18, 5, 17, 16, 4, 2]
+// sorted for easy understanding: [2, 4, 5, 16, 17, 18, 19, 21
 
 int digital_read(int pin)
 {

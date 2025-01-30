@@ -7,6 +7,7 @@
 // Command types (expand as needed)
 typedef enum
 {
+  CMD_SET_GPIO_DIRECTION,
   CMD_READ_AI,       // Format: "READ_AI <channel> <checksum>"
   CMD_SET_AO,        // Format: "SET_AO <channel> <value> <checksum>"
   CMD_SET_DIO,       // Format: "SET_DIO <pin> <mode> <freq> <checksum>"
@@ -22,7 +23,7 @@ typedef struct
   uint8_t pin;      // For DIO commands
   uint8_t channel;  // For AI/AO commands AND UART CHANNEL
   float value;      // Frequency, AO value, or baud rate
-  char mode[10];    // "INPUT", "OUTPUT", "BLINK"
+  char mode[10];    // "INPUT", "OUTPUT", "BLINK", "LATCH"
 } ParsedCommand;
 
 // Error codes

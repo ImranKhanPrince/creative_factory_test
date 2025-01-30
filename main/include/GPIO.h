@@ -32,9 +32,10 @@ typedef enum
 //   int blink_delay_ms;        // FOR OUTPUT DIRECTION
 //   gpio_num_t last_wake_time; // FOR OUTPUT DIRECTION
 // } pinMap_t;
+
 typedef struct
 {
-  int pin_name;
+  int pin_name; // TODO: this will no longer come from nvs insted it will come from hardcoded array
   GPIO_MODE mode;
   GPIO_STATE state;
   int blink_delay_ms;
