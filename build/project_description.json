@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "creative_factory",
-    "project_version":    "73415d3-dirty",
+    "project_version":    "7b9c1f3-dirty",
     "project_path":       "C:/Users/Notebook/Desktop/creative_factory",
     "idf_path":           "C:/Users/Notebook/esp/v5.3/esp-idf",
     "build_dir":          "C:/Users/Notebook/Desktop/creative_factory/build",

@@ -2,19 +2,25 @@
 #define AI_H
 
 #include <stdint.h>
-#include "driver/adc.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 
-// ADC Channels definitions
-#define MAX_AI_CHANNELS 8
-#define ADC_ATTEN ADC_ATTEN_DB_11
+// ADC Configuration
 
-#define ADC1_CHANNEL_4 ADC_CHANNEL_4 // GPIO32
-#define ADC1_CHANNEL_5 ADC_CHANNEL_5 // GPIO33
-#define ADC_BITWIDTH ADC_BITWIDTH_10 // making adc into 10bit insted of 12bit(default)
+#define ADC_ATTEN ADC_ATTEN_DB_12
+#define ADC_BITWIDTH ADC_BITWIDTH_10
+#define MAX_AI_CHANNELS 2
+
+// Define ADC channels using ESP-IDF 5.3 naming convention
+#define CHANNEL1 ADC_CHANNEL_6 // GPIO34
+#define CHANNEL2 ADC_CHANNEL_7 // GPIO35
+
+#define ADC_VREF 3.3f
+#define ADC_MAX ((1 << ADC_BITWIDTH) - 1)
 
 // Function prototypes
-void init_adc_channel1();
-void init_adc_channel2();
+void init_adc_channels();
 
 int read_adc_channel1();
 int read_adc_channel2();

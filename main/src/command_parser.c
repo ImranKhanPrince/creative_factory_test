@@ -114,7 +114,7 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
     if (token_count != 3)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_READ_AI;
-    cmd->pin = atoi(tokens[1]);
+    cmd->channel = atoi(tokens[1]);
   }
   else if (strcmp(tokens[0], "SET_AO") == 0)
   {
@@ -285,17 +285,18 @@ static void handle_read_ai(int channel)
   if (channel == 1)
   {
     int raw_value = read_adc_channel1();
-    float voltage_value = raw_value * 5.0 / (1 << ADC_BITWIDTH) - 1;
-
-    sprintf(buf, "%.2f\n", voltage_value);
+    float voltage_value_V = (raw_value * ADC_VREF) / ADC_MAX;
+    uart1_log("RAW Channel-1 Value: %d\n", raw_value);
+    sprintf(buf, "%.2fV\n", voltage_value_V);
     uart0_print(buf);
   }
   else if (channel == 2)
   {
     int raw_value = read_adc_channel2();
-    float voltage_value = raw_value * 5.0 / (1 << ADC_BITWIDTH) - 1;
+    uart1_log("RAW Channel-2 Value: %d\n", raw_value);
+    float voltage_value_V = (raw_value * ADC_VREF) / ADC_MAX;
 
-    sprintf(buf, "%.2f\n", voltage_value);
+    sprintf(buf, "%.2fV\n", voltage_value_V);
     uart0_print(buf);
   }
   else
