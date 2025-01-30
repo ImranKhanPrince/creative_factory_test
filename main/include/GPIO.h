@@ -39,7 +39,7 @@ typedef struct
   GPIO_MODE mode;
   GPIO_STATE state;
   int blink_delay_ms;
-  gpio_num_t last_wake_time;
+  gpio_num_t last_wake_time; // TODO: why gpio_num_t somethng is very wrong figure out
 } pinMap_t;
 
 #define MAX_PINS 8
