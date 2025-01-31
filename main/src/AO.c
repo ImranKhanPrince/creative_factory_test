@@ -10,9 +10,6 @@
 #define LEDC_RESOLUTION LEDC_TIMER_10_BIT // 10-bit resolution (0-1023)
 #define MAX_VOLTAGE 3.3                   // Max ESP32 voltage
 
-#define CHANNEL1_PIN_NO GPIO_NUM_22
-#define CHANNEL2_PIN_NO GPIO_NUM_23
-
 bool channel1_running_ = false;
 bool channel2_running_ = false;
 

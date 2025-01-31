@@ -2,10 +2,6 @@
 #define NVS_H
 #include "nvs_flash.h"
 
-// TODO: save and load for each entry
-// uart baud rate
-// gpio matrix. with pin value or blink state
-// analog out value
 esp_err_t init_nvs(void);
 
 esp_err_t save_pinmap_to_nvs(void);

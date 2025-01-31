@@ -5,30 +5,12 @@
 #include "uart1.h"
 #include "nvs.h"
 
-// in the delay state it will lopp throught the array and check pinMODE if BLINK then check delay and send to next state
 pinMap_t pinmap[MAX_PINS] = {0};
-int used_gpio_count = 0; // this will count the index of the array to insert the values of new gpio command TODO: obsolete
 uint8_t pin_nums[8] = {21, 19, 18, 5, 17, 16, 4, 2};
 // dev module pattern: [21, 19, 18, 5, 17, 16, 4, 2]
 // sorted for easy understanding: [2, 4, 5, 16, 17, 18, 19, 21
 
 static int8_t get_pinmap_index(uint8_t pin_num);
-
-int digital_read(int pin)
-{
-  // TODO: check the pin number from pin_nums then check if DIRECTION is output if not then give error but read the value.
-
-  // Reset the pin to its default state
-  gpio_reset_pin(pin);
-
-  // Configure the pin as input
-  gpio_set_direction(pin, GPIO_MODE_INPUT);
-
-  // Read the pin value
-  int value = gpio_get_level(pin);
-
-  return value;
-}
 
 void init_pinmap()
 {
@@ -42,13 +24,12 @@ void init_pinmap()
     pinmap[i].last_wake_time = xTaskGetTickCount();
   }
 }
-// TODO: a function named nvs load pinmap and that will also set the digital_out if latch mode
 
 void blink_task()
 {
   int i = 0;
   while (i < MAX_PINS)
-  { // TODO: blink and OUTPUT Direction
+  {
     if (pinmap[i].direction == OUTPUT && pinmap[i].mode == BLINK)
     {
       const TickType_t delay_ticks = pdMS_TO_TICKS(pinmap[i].blink_delay_ms);
@@ -157,7 +138,7 @@ bool set_gpio_state(uint8_t pin, uint16_t value)
 }
 bool set_gpio_blink(uint8_t pin, uint16_t value)
 {
-  uint8_t pin_index = get_pinmap_index(pin);
+  int8_t pin_index = get_pinmap_index(pin);
   if (pin_index < 0)
   {
     uart1_log("Wrong Pin Number");
@@ -181,4 +162,24 @@ bool set_gpio_blink(uint8_t pin, uint16_t value)
     return false;
   }
   return true;
+}
+
+int digital_read(int pin)
+{
+  int8_t pin_index = get_pinmap_index(pin);
+  if (pin_index < 0)
+  {
+    uart1_log("Wrong Pin Number");
+    return -2;
+  }
+  else if (pinmap[pin_index].direction != INPUT)
+  {
+    return -1;
+  }
+
+  gpio_reset_pin(pin);
+  gpio_set_direction(pin, GPIO_MODE_INPUT);
+  int value = gpio_get_level(pin);
+
+  return value;
 }

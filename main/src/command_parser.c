@@ -11,9 +11,9 @@
 #include "nvs.h"
 #include "AO.h"
 #include "AI.h"
-// TODO: name this file to command processor and this file is architechture agnostic same as main.c
+// this file is architechture independant same as main.c
 
-// Maximum tokens in a command (e.g., "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
+// Maximum tokens in a command (ex: "SET_DIO 1 BLINK 500 0xA5" → 5 tokens)
 #define MAX_TOKENS 5
 #define CHECKSUM_HEX_LEN 4 // "0xA5"
 
@@ -171,11 +171,10 @@ void process_uart_command(char *buffer)
 
   switch (cmd.type)
   {
-  // TODO: implement these functionalities
   case CMD_SET_GPIO_DIRECTION:
-    // configure gpio direction input or output
     handle_set_direction(cmd.pin, cmd.mode);
     break;
+
   case CMD_SET_DIO:
     handle_set_do(cmd.pin, cmd.mode, (uint16_t)cmd.value);
     break;
@@ -197,7 +196,6 @@ void process_uart_command(char *buffer)
     break;
 
   case CMD_ERROR:
-    // log error message
     uart1_log("Unrecognized Command.\n");
     break;
 
@@ -318,7 +316,6 @@ static void handle_read_ai(int channel)
 
 static void handle_read_DI(int pin)
 {
-  // TODO: make a error handler if gpio number is invalid. same if the pin is configured as OUTPUT
 
   int pin_value = digital_read(pin);
   if (pin_value == 0)
@@ -329,9 +326,13 @@ static void handle_read_DI(int pin)
   {
     uart0_print("HIGH\n");
   }
+  else if (pin_value == -1)
+  {
+    uart1_log("Pin is set to Output Mode\n");
+  }
   else
   {
-    uart1_debug_print("Invalid pin value\n");
+    uart1_log("Invalid pin value\n");
   }
 }
 

@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include "driver/ledc.h"
 
+#define CHANNEL1_PIN_NO GPIO_NUM_22
+#define CHANNEL2_PIN_NO GPIO_NUM_23
+
 extern bool channel1_running_;
 extern bool channel2_running_;
 

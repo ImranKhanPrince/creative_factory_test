@@ -4,8 +4,6 @@
 #include "gpio.h"
 #include "AO.h"
 
-// TODO: uart baudrate, analog_IO values
-
 esp_err_t init_nvs(void)
 {
   esp_err_t err = nvs_flash_init();
@@ -16,7 +14,7 @@ esp_err_t init_nvs(void)
   }
   return err;
 }
-// TODO: adjust the pinmap according to new addition
+
 esp_err_t save_pinmap_to_nvs(void)
 {
   nvs_handle_t nvs_handle;

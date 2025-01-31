@@ -41,14 +41,9 @@ extern int used_gpio_count;
 // public
 void init_pinmap();
 void blink_task();
-
-// TODO: to make
 bool set_gpio_direction(uint8_t pin, GPIO_DIRECTION dir);
-bool set_gpio_mode(uint8_t pin, GPIO_DIRECTION mode);
-
 bool set_gpio_state(uint8_t pin, uint16_t value);
 bool set_gpio_blink(uint8_t pin, uint16_t value);
-
 int digital_read(int pin);
 
 #endif // GPIO_HEADER

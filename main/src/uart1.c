@@ -1,5 +1,4 @@
 #include "uart1.h"
-// TODO: change baudrate
 
 int uart1_baudrate_ = 115200;
 
