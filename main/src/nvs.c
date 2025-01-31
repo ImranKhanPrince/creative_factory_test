@@ -21,84 +21,30 @@ esp_err_t save_pinmap_to_nvs(void)
 {
   nvs_handle_t nvs_handle;
   esp_err_t err;
-  char debug_buf[64];
 
-  // Open NVS debug
-  uart1_debug_print("Opening NVS...\n");
-  err = nvs_open("gpio_config", NVS_READWRITE, &nvs_handle);
+  err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
   if (err != ESP_OK)
   {
-    sprintf(debug_buf, "NVS open failed! Error: %d\n", err);
-    uart1_debug_print(debug_buf);
+    uart1_log("NVS open failed: %s\n", esp_err_to_name(err));
     return err;
   }
 
-  // Save count debug
-  sprintf(debug_buf, "Saving used_count: %d\n", used_gpio_count);
-  uart1_debug_print(debug_buf);
-
-  err = nvs_set_u8(nvs_handle, "used_count", used_gpio_count);
+  err = nvs_set_blob(nvs_handle, "pinmap", pinmap, sizeof(pinMap_t) * MAX_PINS);
   if (err != ESP_OK)
   {
-    sprintf(debug_buf, "Failed to save used_count! Error: %d\n", err);
-    uart1_debug_print(debug_buf);
+    uart1_log("NVS write failed: %s\n", esp_err_to_name(err));
     nvs_close(nvs_handle);
     return err;
   }
 
-  // Save pins debug
-  for (int i = 0; i < used_gpio_count; i++)
-  {
-    char key[16];
-
-    sprintf(debug_buf, "Saving pin %d config...\n", i);
-    uart1_debug_print(debug_buf);
-
-    // Save pin number
-    sprintf(key, "pin%d_num", i);
-    sprintf(debug_buf, "Key: %s, Value: %d\n", key, pinmap[i].pin_name);
-    uart1_debug_print(debug_buf);
-
-    err = nvs_set_i32(nvs_handle, key, pinmap[i].pin_name);
-    if (err != ESP_OK)
-    {
-      sprintf(debug_buf, "Failed to save pin number! Error: %d\n", err);
-      uart1_debug_print(debug_buf);
-      break;
-    }
-
-    // Save mode
-    sprintf(key, "pin%d_mode", i);
-    err = nvs_set_u8(nvs_handle, key, (uint8_t)pinmap[i].mode);
-    if (err != ESP_OK)
-    {
-      sprintf(debug_buf, "Failed to save pin mode! Error: %d\n", err);
-      uart1_debug_print(debug_buf);
-      break;
-    }
-
-    // Save delay
-    sprintf(key, "pin%d_delay", i);
-    err = nvs_set_i32(nvs_handle, key, pinmap[i].blink_delay_ms);
-    if (err != ESP_OK)
-    {
-      sprintf(debug_buf, "Failed to save blink delay! Error: %d\n", err);
-      uart1_debug_print(debug_buf);
-      break;
-    }
-  }
-
-  // Commit debug
-  uart1_debug_print("Committing to NVS...\n");
   err = nvs_commit(nvs_handle);
   if (err != ESP_OK)
   {
-    sprintf(debug_buf, "NVS commit failed! Error: %d\n", err);
-    uart1_debug_print(debug_buf);
+    uart1_log("NVS commit failed: %s\n", esp_err_to_name(err));
   }
 
   nvs_close(nvs_handle);
-  uart1_debug_print("NVS operation complete\n");
+  uart1_log("Pinmap saved to NVS\n");
   return err;
 }
 
@@ -106,54 +52,25 @@ esp_err_t load_pinmap_from_nvs(void)
 {
   nvs_handle_t nvs_handle;
   esp_err_t err;
+  size_t required_size = sizeof(pinMap_t) * MAX_PINS;
 
-  // Open NVS
-  err = nvs_open("gpio_config", NVS_READONLY, &nvs_handle);
-  if (err != ESP_OK)
-    return err;
-
-  // Get number of used pins
-  err = nvs_get_u8(nvs_handle, "used_count", &used_gpio_count);
+  err = nvs_open("storage", NVS_READONLY, &nvs_handle);
   if (err != ESP_OK)
   {
-    nvs_close(nvs_handle);
+    uart1_log("NVS open failed: %s\n", esp_err_to_name(err));
     return err;
   }
 
-  // Load each pin configuration
-  for (int i = 0; i < used_gpio_count; i++)
+  err = nvs_get_blob(nvs_handle, "pinmap", pinmap, &required_size);
+  if (err != ESP_OK)
   {
-    char key[16];
-
-    // Load pin number
-    sprintf(key, "pin%d_num", i);
-    uart1_debug_print(key);
-    uart1_debug_print(" Initialized.\n");
-    err = nvs_get_i32(nvs_handle, key, &pinmap[i].pin_name);
-
-    // Load mode
-    sprintf(key, "pin%d_mode", i);
-    uint8_t mode;
-    err = nvs_get_u8(nvs_handle, key, &mode);
-    pinmap[i].mode = (GPIO_MODE)mode;
-
-    // Load blink delay
-    sprintf(key, "pin%d_delay", i);
-    err = nvs_get_i32(nvs_handle, key, &pinmap[i].blink_delay_ms);
-
-    if (err != ESP_OK)
-      break;
-
-    // Initialize GPIO based on mode
-    gpio_set_direction(pinmap[i].pin_name, GPIO_MODE_OUTPUT);
-    pinmap[i].state = LOW;
-    pinmap[i].last_wake_time = xTaskGetTickCount();
+    uart1_log("NVS read failed: %s\n", esp_err_to_name(err));
   }
 
   nvs_close(nvs_handle);
+  uart1_log("Pinmap loaded from NVS\n");
   return err;
 }
-
 esp_err_t save_uart_baudrates(void)
 {
   nvs_handle_t nvs_handle;

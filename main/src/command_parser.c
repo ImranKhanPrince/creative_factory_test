@@ -26,6 +26,8 @@ static void handle_uart_baud_change(int channel, int baud);
 static void handle_pwm_value_change(int channel, float value);
 static void handle_read_DI(int pin);
 static void handle_read_ai(int channel);
+static void handle_set_direction(uint8_t pin, char *direction);
+static void handle_set_do(uint8_t pin, char *mode, uint16_t value);
 static int get_nearest_baudrate(int requested_baudrate);
 
 // Tokenize the command into an array of strings
@@ -50,10 +52,13 @@ static uint8_t hex_to_uint8(const char *hex)
 // Validate checksum (XOR of all bytes before checksum)
 bool validate_checksum(const char *buffer, uint8_t received_checksum)
 {
-  // TODO: naming channel 0 causes checksum to mismatch. why?
   uint8_t calculated = 0;
-  for (const char *p = buffer; *p != '\0' && *p != '0'; p++)
-  { // Stop before "0x"
+  for (const char *p = buffer; *p != '\0'; p++)
+  {
+    if (strncmp(p, "0x", 2) == 0)
+    {
+      break;
+    }
     calculated ^= *p;
   }
   return (calculated == received_checksum);
@@ -90,24 +95,25 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
     return CMD_ERR_CHECKSUM_MISMATCH;
 
   // Parse command type
+  // SET_GPIO_DIR 2 OUTPUT Checksum (4)
   if (strcmp(tokens[0], "SET_GPIO_DIR") == 0)
   {
-    uart1_log("CMD SET_GPIO_DIR");
+    uart1_log("CMD SET_GPIO_DIR\n");
     if (token_count != 4)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_GPIO_DIRECTION;
     cmd->pin = atoi(tokens[1]); // pin no so that user can see the boards nuumber and enter that
     strncpy(cmd->mode, tokens[2], sizeof(cmd->mode));
-  } // SET_GPIO_DIR 2 OUTPUT Checksum (4)
-  else if (strcmp(tokens[0], "SET_DIO") == 0)
+  } // SET_DIO <Pin> <mode> <freq/state> <checksum>
+  else if (strcmp(tokens[0], "SET_DO") == 0)
   {
-    uart1_debug_print("SET_DIO \n");
+    uart1_debug_print("SET_DO \n");
     if (token_count != 5)
       return CMD_ERR_INVALID_FORMAT;
     cmd->type = CMD_SET_DIO;
     cmd->pin = atoi(tokens[1]);
     strncpy(cmd->mode, tokens[2], sizeof(cmd->mode));
-    cmd->value = atoi(tokens[3]); // Frequency
+    cmd->value = atoi(tokens[3]); // Frequency or state
   }
   else if (strcmp(tokens[0], "READ_DI") == 0)
   {
@@ -168,19 +174,10 @@ void process_uart_command(char *buffer)
   // TODO: implement these functionalities
   case CMD_SET_GPIO_DIRECTION:
     // configure gpio direction input or output
-    // set_direction(cmd.pin, cmd.mode);
+    handle_set_direction(cmd.pin, cmd.mode);
     break;
   case CMD_SET_DIO:
-    if (strcmp(cmd.mode, "BLINK") == 0)
-    {
-      // Configure DIO pin to blink at cmd.value Hz
-      // dio_set_blink(cmd.pin, cmd.value);
-    }
-    else
-    {
-      // Set to INPUT/OUTPUT
-      // dio_set_mode(cmd.pin, cmd.mode);
-    }
+    handle_set_do(cmd.pin, cmd.mode, (uint16_t)cmd.value);
     break;
 
   case CMD_READ_AI:
@@ -300,14 +297,14 @@ static void handle_read_ai(int channel)
   {
     int raw_value = read_adc_channel1();
     float voltage_value_V = (raw_value * ADC_VREF) / ADC_MAX;
-    uart1_log("RAW Channel-1 Value: %d\n", raw_value);
+    uart1_log("RAW Channel 1 Value: %d\n", raw_value);
     sprintf(buf, "%.2fV\n", voltage_value_V);
     uart0_print(buf);
   }
   else if (channel == 2)
   {
     int raw_value = read_adc_channel2();
-    uart1_log("RAW Channel-2 Value: %d\n", raw_value);
+    uart1_log("RAW Channel 2 Value: %d\n", raw_value);
     float voltage_value_V = (raw_value * ADC_VREF) / ADC_MAX;
 
     sprintf(buf, "%.2fV\n", voltage_value_V);
@@ -319,9 +316,9 @@ static void handle_read_ai(int channel)
   }
 }
 
-void handle_read_DI(int pin)
+static void handle_read_DI(int pin)
 {
-  // TODO: make a error handler if gpio number is invalid.
+  // TODO: make a error handler if gpio number is invalid. same if the pin is configured as OUTPUT
 
   int pin_value = digital_read(pin);
   if (pin_value == 0)
@@ -335,5 +332,51 @@ void handle_read_DI(int pin)
   else
   {
     uart1_debug_print("Invalid pin value\n");
+  }
+}
+
+static void handle_set_direction(uint8_t pin, char *direction)
+{
+  if (strcmp(direction, "INPUT") == 0)
+  {
+    if (!set_gpio_direction(pin, INPUT))
+    {
+      uart1_log("Failed to set direction for PIN %d\n", pin);
+      return;
+    }
+    uart1_log("PIN:%d Direction set to OUTPUT\n", pin);
+  }
+  else if (strcmp(direction, "OUTPUT") == 0)
+  {
+    if (!set_gpio_direction(pin, OUTPUT))
+    {
+      uart1_log("Failed to set direction for PIN %d\n", pin);
+      return;
+    }
+    uart1_log("PIN:%d Direction set to OUTPUT\n", pin);
+  }
+  else
+  {
+    uart1_log("Wrong Direction.\n");
+  }
+}
+
+static void handle_set_do(uint8_t pin, char *mode, uint16_t value)
+{
+  if (strcmp(mode, "BLINK") == 0)
+  {
+    // Configure DIO pin to blink at cmd.value Hz
+    set_gpio_blink(pin, value);
+    // dio_set_blink(cmd.pin, cmd.value);
+  }
+  else if (strcmp(mode, "LATCH") == 0)
+  {
+    set_gpio_state(pin, value);
+    // Set to INPUT/OUTPUT
+    // dio_set_mode(cmd.pin, cmd.mode);
+  }
+  else
+  {
+    uart1_log("Invalid DO mode.");
   }
 }

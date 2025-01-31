@@ -12,8 +12,8 @@ typedef enum
 } GPIO_MODE;
 typedef enum
 {
-  HIGH,
-  LOW
+  LOW,
+  HIGH
 } GPIO_STATE;
 
 typedef enum
@@ -22,24 +22,14 @@ typedef enum
   OUTPUT
 } GPIO_DIRECTION;
 
-// typedef struct
-// {
-//   uint8_t index;
-//   uint8_t pin_name;          // pin_number of esp
-//   GPIO_DIRECTION direction;  // INPUT OUTPUT DIRECTION
-//   GPIO_MODE mode;            // FOR OUTPUT DIRECTION
-//   GPIO_STATE state;          // FOR OUTPUT DIRECTION
-//   int blink_delay_ms;        // FOR OUTPUT DIRECTION
-//   gpio_num_t last_wake_time; // FOR OUTPUT DIRECTION
-// } pinMap_t;
-
 typedef struct
 {
-  int pin_name; // TODO: this will no longer come from nvs insted it will come from hardcoded array
-  GPIO_MODE mode;
-  GPIO_STATE state;
-  int blink_delay_ms;
-  gpio_num_t last_wake_time; // TODO: why gpio_num_t somethng is very wrong figure out
+  uint8_t pin_num;           // ESP GPIO PIN NUM
+  GPIO_DIRECTION direction;  // INPUT & OUTPUT
+  GPIO_MODE mode;            // FOR OUTPUT
+  GPIO_STATE state;          // FOR OUTPUT & LATCH&BLINK
+  uint16_t blink_delay_ms;   // FOR OUTPUT & BLINK
+  TickType_t last_wake_time; // FOR OUTPUT & BLINK
 } pinMap_t;
 
 #define MAX_PINS 8
@@ -53,8 +43,11 @@ void init_pinmap();
 void blink_task();
 
 // TODO: to make
-void do_set_blink(int pin, int value);
-void do_set_mode(int pin, char *mode);
+bool set_gpio_direction(uint8_t pin, GPIO_DIRECTION dir);
+bool set_gpio_mode(uint8_t pin, GPIO_DIRECTION mode);
+
+bool set_gpio_state(uint8_t pin, uint16_t value);
+bool set_gpio_blink(uint8_t pin, uint16_t value);
 
 int digital_read(int pin);
 

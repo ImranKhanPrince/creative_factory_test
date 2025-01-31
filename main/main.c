@@ -37,9 +37,10 @@ void app_main(void)
   init_adc_channels();
   // cleanup_adc(); // No need
 
+  // TODO: Pinmap and nvs needs heavily modification. used_gpio_count obsolete and pin name is pin_num
   if (load_pinmap_from_nvs() != ESP_OK)
   {
-    uart1_debug_print("Failed to Load the pinmap value from nvs\n");
+    uart1_log("Failed to Load the pinmap value from nvs\n");
   }
 
   // TickType_t last_wake_time = xTaskGetTickCount();
