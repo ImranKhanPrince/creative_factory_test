@@ -10,6 +10,7 @@ uint8_t pin_nums[8] = {21, 19, 18, 5, 17, 16, 4, 2};
 // dev module pattern: [21, 19, 18, 5, 17, 16, 4, 2]
 // sorted for easy understanding: [2, 4, 5, 16, 17, 18, 19, 21
 
+// STATIC SIGNATURES
 static int8_t get_pinmap_index(uint8_t pin_num);
 
 void init_pinmap()

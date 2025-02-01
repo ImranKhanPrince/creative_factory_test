@@ -36,11 +36,9 @@ typedef enum
 } CommandError;
 
 // Public functions
-CommandError parse_command(const char *buffer, ParsedCommand *cmd);
-bool validate_checksum(const char *buffer, uint8_t received_checksum);
+
 void process_uart_command(char *buffer);
 
 // private
-void print_command_error(CommandError err);
 
 #endif // COMMAND_PARSER_H

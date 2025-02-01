@@ -2,6 +2,8 @@
 #include "uart1.h"
 
 static adc_oneshot_unit_handle_t adc1_handle;
+
+// STATIC SIGNATUES
 static void init_adc();
 
 static void init_adc()

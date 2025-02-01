@@ -18,8 +18,9 @@
 #define CHECKSUM_HEX_LEN 4 // "0xA5"
 
 // STATIC SIGNATUERS
-
-// TODO: move the handle functions to elsewhere
+static void print_command_error(CommandError err);
+static CommandError parse_command(const char *buffer, ParsedCommand *cmd);
+static bool validate_checksum(const char *buffer, uint8_t received_checksum);
 static int tokenize(char *buffer, char **tokens, const char *delim);
 static uint8_t hex_to_uint8(const char *hex);
 static void handle_uart_baud_change(int channel, int baud);
@@ -30,38 +31,50 @@ static void handle_set_direction(uint8_t pin, char *direction);
 static void handle_set_do(uint8_t pin, char *mode, uint16_t value);
 static int get_nearest_baudrate(int requested_baudrate);
 
-// Tokenize the command into an array of strings
-static int tokenize(char *buffer, char **tokens, const char *delim)
+void process_uart_command(char *buffer)
 {
-  int count = 0;
-  char *token = strtok(buffer, delim);
-  while (token != NULL && count < MAX_TOKENS)
-  {
-    tokens[count++] = token;
-    token = strtok(NULL, delim);
-  }
-  return count;
-}
+  ParsedCommand cmd = {0};
+  CommandError err = parse_command(buffer, &cmd);
 
-// Convert hex string to uint8 (for checksum)
-static uint8_t hex_to_uint8(const char *hex)
-{
-  return (uint8_t)strtol(hex, NULL, 16);
-}
-
-// Validate checksum (XOR of all bytes before checksum)
-bool validate_checksum(const char *buffer, uint8_t received_checksum)
-{
-  uint8_t calculated = 0;
-  for (const char *p = buffer; *p != '\0'; p++)
+  if (err != CMD_ERR_NONE)
   {
-    if (strncmp(p, "0x", 2) == 0)
-    {
-      break;
-    }
-    calculated ^= *p;
+    print_command_error(err);
+    return;
   }
-  return (calculated == received_checksum);
+
+  switch (cmd.type)
+  {
+  case CMD_SET_GPIO_DIRECTION:
+    handle_set_direction(cmd.pin, cmd.mode);
+    break;
+
+  case CMD_SET_DIO:
+    handle_set_do(cmd.pin, cmd.mode, (uint16_t)cmd.value);
+    break;
+
+  case CMD_READ_AI:
+    handle_read_ai(cmd.channel);
+    break;
+
+  case CMD_SET_AO:
+    handle_pwm_value_change(cmd.channel, cmd.value);
+    break;
+
+  case CMD_READ_DI:
+    handle_read_DI(cmd.pin);
+    break;
+
+  case CMD_SET_UART_BAUD:
+    handle_uart_baud_change(cmd.channel, cmd.value);
+    break;
+
+  case CMD_ERROR:
+    uart1_log("Unrecognized Command.\n");
+    break;
+
+  default:
+    break;
+  }
 }
 
 // NOTE: if back to back 2 new line comes then causes one command to faile
@@ -158,53 +171,41 @@ CommandError parse_command(const char *buffer, ParsedCommand *cmd)
   return CMD_ERR_NONE;
 }
 
-void process_uart_command(char *buffer)
+// Tokenize the command into an array of strings
+static int tokenize(char *buffer, char **tokens, const char *delim)
 {
-  ParsedCommand cmd = {0};
-  CommandError err = parse_command(buffer, &cmd);
-
-  if (err != CMD_ERR_NONE)
+  int count = 0;
+  char *token = strtok(buffer, delim);
+  while (token != NULL && count < MAX_TOKENS)
   {
-    print_command_error(err);
-    return;
+    tokens[count++] = token;
+    token = strtok(NULL, delim);
   }
-
-  switch (cmd.type)
-  {
-  case CMD_SET_GPIO_DIRECTION:
-    handle_set_direction(cmd.pin, cmd.mode);
-    break;
-
-  case CMD_SET_DIO:
-    handle_set_do(cmd.pin, cmd.mode, (uint16_t)cmd.value);
-    break;
-
-  case CMD_READ_AI:
-    handle_read_ai(cmd.channel);
-    break;
-
-  case CMD_SET_AO:
-    handle_pwm_value_change(cmd.channel, cmd.value);
-    break;
-
-  case CMD_READ_DI:
-    handle_read_DI(cmd.pin);
-    break;
-
-  case CMD_SET_UART_BAUD:
-    handle_uart_baud_change(cmd.channel, cmd.value);
-    break;
-
-  case CMD_ERROR:
-    uart1_log("Unrecognized Command.\n");
-    break;
-
-  default:
-    break;
-  }
+  return count;
 }
 
-void print_command_error(CommandError err)
+// Convert hex string to uint8 (for checksum)
+static uint8_t hex_to_uint8(const char *hex)
+{
+  return (uint8_t)strtol(hex, NULL, 16);
+}
+
+// Validate checksum (XOR of all bytes before checksum)
+static bool validate_checksum(const char *buffer, uint8_t received_checksum)
+{
+  uint8_t calculated = 0;
+  for (const char *p = buffer; *p != '\0'; p++)
+  {
+    if (strncmp(p, "0x", 2) == 0)
+    {
+      break;
+    }
+    calculated ^= *p;
+  }
+  return (calculated == received_checksum);
+}
+
+static void print_command_error(CommandError err)
 {
   switch (err)
   {

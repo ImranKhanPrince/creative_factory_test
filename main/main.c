@@ -35,7 +35,7 @@ void app_main(void)
   init_adc_channels();
   // cleanup_adc(); // No need
 
-    if (load_pinmap_from_nvs() != ESP_OK)
+  if (load_pinmap_from_nvs() != ESP_OK)
   {
     uart1_log("Failed to Load the pinmap value from nvs\n");
   }
